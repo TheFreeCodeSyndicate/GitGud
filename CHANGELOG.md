@@ -67,6 +67,33 @@ generator.
   that needed one, including the terminal challenges, which want a home
   directory and a practice folder
 
+## [0.3.0] - 2026-10-04
+
+### Added
+
+- **Checks run automatically** on every challenge that only needs this computer — the folder, Git's own files, the shell history — polling every few seconds while the learner works instead of waiting for Verify. An unmet step reads as a plain to-do, not a red failure, and turns green on its own
+- **Tiered hints and typo detection** (`src/lib/hints.ts`): the lesson's guide character offers a nudge, then the commands, then a full walk-through, one at a time. Shell history is also scanned for a one-letter-off typo of a taught command (`git comit` → `git commit`), with a real-command allowlist so genuine commands are never flagged. Both wait until the learner has been on a challenge a while, or asks, so nothing appears before they have started
+- **"What changed"** (`src/lib/repoState.ts`): after a passing check, a plain-English summary of everything that moved in the repository since the last pass — new repo, new branches, commits, pushes, a clean working tree
+- **A live repository figure** (`src/lib/repoFigure.ts`, `src/components/RepoGraph.tsx`), drawn with `@lucasmarkes/hairline`'s isometric engine (kernel vendored at `src/vendor/`) instead of a flat SVG graph: real commits and branch lanes, a second board for GitHub once a remote exists with a commit's push state shown as solid or dashed, dashed "goal" commits previewing what the current lesson is about to ask for, and a time-travel slider back through history
+- **Live terminal and folder figures** (`src/lib/terminalFigure.ts`, `src/lib/folderFigure.ts`, `src/components/LivePanels.tsx`): the learner's own recent shell commands and chosen folder's contents, drawn the same way, on the Terminal and Files & Folders modules
+- **Predict-then-run quizzes** (`src/components/Predict.tsx`, `src/lib/predictions.ts`): before five key Git commands, three small interactive repo figures to pick the likely outcome from, each explorable like the live graph, with the right one highlighting and a one-line reason once answered
+- **A command-card deck** (`src/lib/cards.ts`, `src/lib/cardCollector.ts`, `src/components/CommandCard.tsx`, `src/components/CardToasts.tsx`, `src/views/Deck.tsx`): 27 cards, one per command the course teaches, turning face-up automatically the first time the learner's shell history shows they really ran it. A toast announces a new card (a backlog of existing history arrives as one note, not a flood), and a Deck page and sidebar link show the full collection
+- **Completion celebrations and streaks** (`src/lib/celebrate.ts`, `src/lib/moments.ts`, `src/lib/streak.ts`, `src/components/Celebration.tsx`): a full-screen screen on completing a challenge, a module or the whole course, with stat cards that count up; a separate day-streak screen on the first completion of the day, with a pixel flame and a week calendar; confetti from both bottom corners and a short chime. The progress file gained `days` and `cards` fields (`src-tauri/src/store.rs`, `src/lib/progress.ts`), read as empty by anything saved before this change
+- Home progress redrawn as one row of squares per module, filling in like GitHub's contribution graph, instead of a flat row of circles (`src/components/QuestMap.tsx`)
+- New dependency: `canvas-confetti`
+- scripts/generate-changelog-html.mjs renders site/changelog.html's release list straight from CHANGELOG.md, the same "nothing to hand-edit" principle CHANGELOG.md itself already follows. cut-release.ps1 now runs it (and stages the result) on every release cut, so the page tracks CHANGELOG.md automatically instead of needing a hand-written HTML update each time
+- A timeline-style changelog page on the site (v0.1.0 through v0.2.3), styled to match the existing T3 Code-inspired design system: version/date header, Added/Fixed tag pills, and a connecting rail down the left. Linked from the nav on the home and download pages, with the full unabridged history linked out to CHANGELOG.md and GitHub Releases
+
+### Fixed
+
+- changelog-html generator didn't match CRLF markers on Windows ([`5f477e1`](https://github.com/JyotirmoyDas05/GitGud/commit/5f477e1d0eb09e640f949889bf12fd8a6090467d))
+- The whole window rubber-banded on overscroll — normal for a web page, wrong for a desktop app in a WebView2 shell
+- Any page opened scrolled to wherever the previous page had been left, because the app scrolls inside `<main>`, not the window, and nothing was resetting that scroll position on navigation
+- Nearly every UI element could be text-selected like a web page; selection is now limited to lesson text, code and inputs
+- "What changed" could describe a different repository's history if a folder was deleted and a new one created at the same path, since its baseline was never invalidated
+- bulletsIn() silently merged a section's last bullet into its neighbor when fed CHANGELOG.md's own text: cut-release.ps1 inserts each entry with \r\n while the entry body is \n-only, leaving a stray \r at the seam between releases that broke bulletsIn's un-flagged `$` bullet regex. Worked around by normalizing line endings before parsing, at the one call site that actually sees \r
+- Updating a `.rpm` or `.deb` install from inside the app works: the package and its signature are both downloaded natively now, so nothing on the path goes through the web view's network stack
+
 ## [0.2.3] - 2026-09-22
 
 ### Added
