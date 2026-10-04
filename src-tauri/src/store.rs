@@ -21,6 +21,12 @@ pub struct Progress {
     pub saved_dir: Option<String>,
     #[serde(default)]
     pub invited_friend: Option<String>,
+    /// Local dates (YYYY-MM-DD) on which a challenge was completed: the streak.
+    #[serde(default)]
+    pub days: Vec<String>,
+    /// Command cards collected: card id → local date first seen.
+    #[serde(default)]
+    pub cards: std::collections::BTreeMap<String, String>,
 }
 
 fn progress_path<R: Runtime>(app: &AppHandle<R>) -> Result<PathBuf, String> {
@@ -143,6 +149,12 @@ mod tests {
         assert_eq!(back.completed.get("get_git"), Some(&true));
         assert_eq!(back.saved_dir.as_deref(), Some("D:/repos/hello"));
         assert_eq!(back.invited_friend, None);
+    }
+
+    #[test]
+    fn older_files_without_streak_or_cards_still_read() {
+        let parsed: Progress = serde_json::from_str("{\"completed\":{}}").unwrap();
+        assert!(parsed.days.is_empty() && parsed.cards.is_empty());
     }
 
     #[test]

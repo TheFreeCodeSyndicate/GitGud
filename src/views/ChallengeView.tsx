@@ -4,6 +4,10 @@ import { byId, challengeTitle, indexOf, moduleOf, moduleTitle, TOTAL_CHALLENGES 
 import { Html } from "~/components/Html";
 import { Mascot, mascotAt } from "~/components/Mascot";
 import { Outline } from "~/components/Outline";
+import { RepoGraph } from "~/components/RepoGraph";
+import { FolderPanel, TerminalPanel } from "~/components/LivePanels";
+import { Predict } from "~/components/Predict";
+import { PREDICTIONS } from "~/lib/predictions";
 import { PrevNext } from "~/components/Shell";
 import { VerifyBlock } from "~/components/VerifyBlock";
 import { loadChallenge } from "~/lib/content";
@@ -76,6 +80,7 @@ function ChallengeBody({
   useEffect(() => setMascotOffset(0), [challenge.id]);
 
   const mascotId = mascotAt(index, mascotOffset)?.id;
+  const savedDir = useProgress().progress.savedDir;
   const t = strings(locale);
   const title = challengeTitle(challenge, locale);
   // "Challenge 7 of 16" alone no longer says what kind of challenge it is,
@@ -135,7 +140,20 @@ function ChallengeBody({
         </div>
       </div>
 
-      <Html className="prose mt-6" html={body.before} />
+      {/* The prediction goes where the lesson stops explaining and starts
+          instructing — before its first step box — so it is asked before the
+          answer is on the page. */}
+      {(() => {
+        const at = PREDICTIONS[challenge.id] ? body.before.indexOf('<div class="chal-step') : -1;
+        if (at < 0) return <Html className="prose mt-6" html={body.before} />;
+        return (
+          <>
+            <Html className="prose mt-6" html={body.before.slice(0, at)} />
+            <Predict key={`p-${challenge.id}`} challengeId={challenge.id} locale={locale} />
+            <Html className="prose" html={body.before.slice(at)} />
+          </>
+        );
+      })()}
 
       {/* Sits at the marker's original position — several challenges put tips
           below the button, so appending it would reorder the lesson.
@@ -145,7 +163,13 @@ function ChallengeBody({
           pass/fail list rendered under N+1's own verifier until the next
           click — the same class of bug `Outline`'s `contentKey` already
           exists to prevent. */}
-      <VerifyBlock key={challenge.id} challenge={challenge} locale={locale} />
+      <VerifyBlock key={challenge.id} challenge={challenge} locale={locale} mascotId={mascotId} />
+
+      {challenge.needsDirectory && challenge.module === "git" && savedDir && (
+        <RepoGraph dir={savedDir} locale={locale} challengeId={challenge.id} />
+      )}
+      {challenge.module === "files" && challenge.needsDirectory && savedDir && <FolderPanel dir={savedDir} locale={locale} />}
+      {(challenge.module === "terminal" || (challenge.module === "files" && !challenge.needsDirectory)) && <TerminalPanel locale={locale} />}
 
       {body.after && <Html className="prose" html={body.after} />}
 

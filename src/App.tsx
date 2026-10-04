@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { TriangleAlert } from "lucide-react";
 
+import { CardToasts } from "~/components/CardToasts";
+import { Celebration } from "~/components/Celebration";
 import { ConfirmDialogHost } from "~/components/ConfirmDialogHost";
 import { Shell } from "~/components/Shell";
 import { FALLBACK_LOCALE, resolveLocale } from "~/lib/content";
 import { gitVersion } from "~/lib/git";
+import { useCardCollector } from "~/lib/cardCollector";
 import { hydrate, useProgressUnreadable } from "~/lib/progress";
 import { useRoute } from "~/lib/router";
 import { checkForUpdate, initUpdates } from "~/lib/updater";
@@ -13,6 +16,7 @@ import { strings } from "~/strings";
 import { ChallengeView } from "~/views/ChallengeView";
 import { Finale } from "~/views/Finale";
 import { Home } from "~/views/Home";
+import { Deck } from "~/views/Deck";
 import { PageView } from "~/views/PageView";
 
 const LOCALE_KEY = "git-gud:locale";
@@ -20,6 +24,7 @@ const THEME_KEY = "git-gud:theme";
 
 export default function App() {
   const route = useRoute();
+  useCardCollector();
 
   const [locale, setLocale] = useState(
     () =>
@@ -113,8 +118,11 @@ export default function App() {
       {route.name === "challenge" && <ChallengeView id={route.id} locale={locale} />}
       {route.name === "page" && <PageView page={route.page} locale={locale} />}
       {route.name === "finale" && <Finale locale={locale} />}
+      {route.name === "deck" && <Deck locale={locale} />}
 
       <ConfirmDialogHost />
+      <Celebration locale={locale} />
+      <CardToasts locale={locale} />
     </Shell>
   );
 }

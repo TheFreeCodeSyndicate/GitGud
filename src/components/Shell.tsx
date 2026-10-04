@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import { BookMarked, Check, Home, Info, LibraryBig, Moon, Sun } from "lucide-react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { BookMarked, Check, Home, Info, Layers, LibraryBig, Moon, Sun } from "lucide-react";
 
 import { CHALLENGES, challengeTitle, grouped, moduleBlurb, moduleTitle } from "~/challenges";
 import { CommandPalette } from "~/components/CommandPalette";
@@ -12,6 +12,7 @@ import { useHeaderTitle } from "~/lib/headerTitle";
 import { WindowControls } from "~/components/WindowControls";
 import { availableLocales } from "~/lib/content";
 import { strings } from "~/strings";
+import { CARDS } from "~/lib/cards";
 import { useProgress } from "~/lib/progress";
 import { href, navigate, useRoute, type Route } from "~/lib/router";
 import { Button } from "~/components/ui/button";
@@ -37,7 +38,14 @@ export function Shell({
   onDarkChange: (next: boolean) => void;
 }) {
   const route = useRoute();
-  const { isComplete, completedCount, total } = useProgress();
+  // The page scrolls inside <main>, not the window, so a new route starts at
+  // the top only if this resets it.
+  const mainRef = useRef<HTMLElement>(null);
+  const routeKey = href(route);
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0 });
+  }, [routeKey]);
+  const { progress, isComplete, completedCount, total } = useProgress();
   const locales = availableLocales();
   const t = strings(locale);
   const promoted = useHeaderTitle();
@@ -205,6 +213,21 @@ export function Shell({
             scroll, and with the scrollbar gone these three would otherwise sit
             off the bottom edge of a short window with nothing to say so. */}
         <div className="relative z-10 shrink-0 border-t p-2">
+          <a
+            href={href({ name: "deck" })}
+            className={cn(
+              "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+              route.name === "deck"
+                ? "bg-sidebar-row-selected font-medium text-sidebar-foreground"
+                : "text-sidebar-muted-foreground hover:bg-sidebar-row-hover hover:text-sidebar-foreground",
+            )}
+          >
+            <Layers className="size-4" />
+            {t.navDeck}
+            <span className="ml-auto text-[11px] text-sidebar-muted-foreground/70 tabular-nums">
+              {CARDS.filter((c) => progress.cards[c.id]).length}/{CARDS.length}
+            </span>
+          </a>
           {NAV.map(({ page, key, icon: Icon }) => (
             <a
               key={page}
@@ -311,7 +334,7 @@ export function Shell({
           <WindowControls />
         </header>
 
-        <main className="@container topbar-scroll-fade min-w-0 flex-1 overflow-y-auto">
+        <main ref={mainRef} className="@container topbar-scroll-fade min-w-0 flex-1 overflow-y-auto">
           {children}
         </main>
       </div>

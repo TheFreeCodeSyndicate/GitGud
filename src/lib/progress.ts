@@ -22,6 +22,10 @@ export interface Progress {
   savedDir: string | null;
   /** Optional friend invited in challenge 8. Never gates completion. */
   invitedFriend: string | null;
+  /** Local dates (YYYY-MM-DD) on which a challenge was completed. */
+  days: string[];
+  /** Command cards collected: card id → local date first seen. */
+  cards: Record<string, string>;
 }
 
 /** Wire shape of the Rust side, which uses snake_case. */
@@ -29,9 +33,11 @@ interface StoredProgress {
   completed: Record<string, boolean>;
   saved_dir: string | null;
   invited_friend: string | null;
+  days?: string[];
+  cards?: Record<string, string>;
 }
 
-const EMPTY: Progress = { completed: {}, savedDir: null, invitedFriend: null };
+const EMPTY: Progress = { completed: {}, savedDir: null, invitedFriend: null, days: [], cards: {} };
 
 function readLocal(): Progress {
   try {
@@ -42,6 +48,8 @@ function readLocal(): Progress {
       completed: parsed.completed ?? {},
       savedDir: parsed.savedDir ?? null,
       invitedFriend: parsed.invitedFriend ?? null,
+      days: parsed.days ?? [],
+      cards: parsed.cards ?? {},
     };
   } catch {
     // A corrupt blob must not brick the app.
@@ -58,6 +66,19 @@ function emit() {
 
 /** Set when the saved file exists but could not be read. */
 let unreadable = false;
+
+let markHydrated: () => void;
+/**
+ * Settles once `hydrate` has finished, however it finished. Anything that
+ * writes on its own initiative (rather than on a click) waits for this, or it
+ * could save over the file with the localStorage copy before the file loads.
+ */
+export const hydrated = new Promise<void>((resolve) => {
+  markHydrated = resolve;
+});
+
+/** Whether automatic writes are safe: loaded, and not a file we failed to read. */
+export const canAutoSave = () => !unreadable;
 
 /** True when saved progress exists on disk but could not be parsed. */
 export function useProgressUnreadable(): boolean {
@@ -82,6 +103,14 @@ export function useProgressUnreadable(): boolean {
  * On that path, keep whatever is in memory and write nothing.
  */
 export async function hydrate(): Promise<void> {
+  try {
+    await load();
+  } finally {
+    markHydrated();
+  }
+}
+
+async function load(): Promise<void> {
   let stored: StoredProgress | null;
 
   try {
@@ -106,6 +135,8 @@ export async function hydrate(): Promise<void> {
     completed: stored.completed ?? {},
     savedDir: stored.saved_dir ?? null,
     invitedFriend: stored.invited_friend ?? null,
+    days: stored.days ?? [],
+    cards: stored.cards ?? {},
   };
   localStorage.setItem(KEY, JSON.stringify(cache));
   emit();
@@ -119,6 +150,8 @@ async function persist(next: Progress) {
         completed: next.completed,
         saved_dir: next.savedDir,
         invited_friend: next.invitedFriend,
+        days: next.days,
+        cards: next.cards,
       } satisfies StoredProgress,
     });
   } catch {
@@ -146,7 +179,16 @@ export function useProgress() {
   );
 
   const setCompleted = useCallback((id: string, done: boolean) => {
-    write({ ...cache, completed: { ...cache.completed, [id]: done } });
+    const day = today();
+    const days = done && !cache.days.includes(day) ? [...cache.days, day] : cache.days;
+    write({ ...cache, completed: { ...cache.completed, [id]: done }, days });
+  }, []);
+
+  const collectCards = useCallback((ids: string[]) => {
+    const fresh = ids.filter((id) => !cache.cards[id]);
+    if (fresh.length === 0) return;
+    const day = today();
+    write({ ...cache, cards: { ...cache.cards, ...Object.fromEntries(fresh.map((id) => [id, day])) } });
   }, []);
 
   const setSavedDir = useCallback((dir: string | null) => {
@@ -172,8 +214,20 @@ export function useProgress() {
     setCompleted,
     setSavedDir,
     setInvitedFriend,
+    collectCards,
     clearAll,
   };
+}
+
+/** The learner's local calendar date, YYYY-MM-DD. */
+export function today(at = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${at.getFullYear()}-${p(at.getMonth() + 1)}-${p(at.getDate())}`;
+}
+
+/** Read the store outside React, e.g. right after a write. */
+export function currentProgress(): Progress {
+  return cache;
 }
 
 /**

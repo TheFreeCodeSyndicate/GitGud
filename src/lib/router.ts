@@ -11,7 +11,8 @@ export type Route =
   | { name: "home" }
   | { name: "challenge"; id: string }
   | { name: "page"; page: "about" | "dictionary" | "resources" }
-  | { name: "finale" };
+  | { name: "finale" }
+  | { name: "deck" };
 
 function parse(hash: string): Route {
   const path = hash.replace(/^#\/?/, "");
@@ -21,6 +22,7 @@ function parse(hash: string): Route {
 
   if (head === "challenge" && tail) return { name: "challenge", id: tail };
   if (head === "finale") return { name: "finale" };
+  if (head === "deck") return { name: "deck" };
   if (head === "about" || head === "dictionary" || head === "resources") {
     return { name: "page", page: head };
   }
@@ -37,6 +39,8 @@ export function href(route: Route): string {
       return `#/${route.page}`;
     case "finale":
       return "#/finale";
+    case "deck":
+      return "#/deck";
   }
 }
 

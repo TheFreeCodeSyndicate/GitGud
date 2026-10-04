@@ -31,3 +31,10 @@ PLAN.md
 # anyone holding it can sign a build that every installed copy will accept.
 *.key
 .gitgud-release-keys/
+
+# Claude Code skill installations. Per-machine tooling for whoever is working
+# in this repo with an agent, not something the project ships or depends on.
+.claude/
+.agents/
+.commandcode/
+skills-lock.json

@@ -572,6 +572,356 @@
   }
 }
 
+/* --- Progress squares (home) -------------------------------------------------
+   Stepped corners instead of rounded ones, to match the pixel landscape. */
+.tile {
+  clip-path: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px),
+    calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+}
+.map-walker {
+  translate: -50% 0;
+  image-rendering: pixelated;
+  animation: gg-walker-bob 1.2s steps(2) infinite;
+}
+@keyframes gg-walker-bob {
+  50% { transform: translateY(-1px); }
+}
+
+/* Hairline's dark palette is drawn for a black page; on this glass it reads
+   too faint, so lift its three greys a step. */
+.dark [data-hairline] {
+  --hairline-edge: #7d7f88;
+  --hairline-mid: #50525a;
+  --hairline-lo: #34353b;
+}
+
+/* Time travel under the repo figure: a thin track, a square pixel thumb. */
+.gg-range {
+  appearance: none;
+  height: 16px;
+  background: transparent;
+  cursor: pointer;
+}
+.gg-range::-webkit-slider-runnable-track {
+  height: 2px;
+  background: color-mix(in srgb, var(--foreground) 18%, transparent);
+}
+.gg-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  margin-top: -4px;
+  background: var(--foreground);
+  transition: scale 120ms ease;
+}
+.gg-range:active::-webkit-slider-thumb {
+  scale: 1.3;
+}
+
+/* --- Command cards -----------------------------------------------------------
+   A playing card in pixel dress: a frame in the module's colour with stepped
+   corners, the art on a dithered panel, and a patterned back while unplayed. */
+.gg-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  perspective: 700px;
+  filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.18));
+}
+/* Stepped corners, each element at its own step size --s. */
+.gg-card-frame,
+.gg-card-face,
+.gg-card-back {
+  clip-path: polygon(0 var(--s), var(--s) var(--s), var(--s) 0, calc(100% - var(--s)) 0, calc(100% - var(--s)) var(--s), 100% var(--s),
+    100% calc(100% - var(--s)), calc(100% - var(--s)) calc(100% - var(--s)), calc(100% - var(--s)) 100%, var(--s) 100%,
+    var(--s) calc(100% - var(--s)), 0 calc(100% - var(--s)));
+}
+.gg-card-frame {
+  --s: 4px;
+  position: relative;
+  aspect-ratio: 148 / 204;
+  padding: 3px;
+  background: var(--m);
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 220ms var(--ease-out-strong);
+}
+.gg-card[data-tilt] .gg-card-frame {
+  will-change: transform;
+}
+.gg-card[data-tilt]:hover .gg-card-frame {
+  transition-duration: 60ms;
+}
+.gg-card-face,
+.gg-card-back {
+  --s: 3px;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+.gg-card-face {
+  background: var(--card);
+}
+.gg-card-art {
+  display: grid;
+  place-items: center;
+  color: var(--m);
+  background:
+    radial-gradient(color-mix(in srgb, var(--m) 30%, transparent) 1px, transparent 1.5px) 0 0 / 6px 6px,
+    color-mix(in srgb, var(--m) 14%, var(--card));
+  border-bottom: 2px solid color-mix(in srgb, var(--m) 40%, var(--card));
+}
+.gg-card-back {
+  display: grid;
+  place-items: center;
+  background:
+    repeating-conic-gradient(color-mix(in srgb, var(--m) 16%, transparent) 0 25%, transparent 0 50%) 0 0 / 8px 8px,
+    color-mix(in srgb, var(--m) 22%, var(--card));
+}
+.gg-card-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgb(255 255 255 / 0.35), transparent 55%);
+  mix-blend-mode: overlay;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.gg-card:hover .gg-card-glare {
+  opacity: 1;
+}
+
+/* A new card turns over as it arrives. */
+.gg-card-flip {
+  animation: gg-card-flip 700ms cubic-bezier(0.34, 1.4, 0.64, 1) var(--d, 120ms) both;
+}
+@keyframes gg-card-flip {
+  0% { opacity: 0; transform: rotateY(-180deg) translateY(12px) scale(0.8); }
+  40% { opacity: 1; }
+  100% { transform: rotateY(0) translateY(0) scale(1); }
+}
+.gg-toast {
+  animation: gg-toast-in 420ms var(--ease-out-strong) both;
+}
+.gg-toast[data-leaving] {
+  animation: gg-toast-out 220ms ease-in both;
+}
+@keyframes gg-toast-in { from { opacity: 0; transform: translateX(24px); } }
+@keyframes gg-toast-out { to { opacity: 0; transform: translateX(24px); } }
+
+/* --- Celebration -------------------------------------------------------------
+   Duolingo's post-lesson sequence, in this app's pixel dress. Every piece
+   enters on its own --d delay so the screen assembles in order: hero, title,
+   stat cards one by one, then the button. */
+.gg-win {
+  animation: gg-fade 220ms var(--ease-out-strong) both;
+}
+.gg-win[data-leaving] {
+  animation: gg-fade 180ms ease-in reverse both;
+}
+.gg-win-screen {
+  animation: gg-screen-in 360ms var(--ease-out-strong) both;
+}
+.gg-win-title {
+  color: var(--foreground);
+}
+.gg-rise {
+  animation: gg-rise 420ms var(--ease-out-strong) var(--d, 0ms) both;
+}
+.gg-rise-bounce {
+  animation: gg-rise-bounce 560ms cubic-bezier(0.34, 1.56, 0.64, 1) var(--d, 0ms) both;
+}
+.gg-pop {
+  animation: gg-pop 640ms cubic-bezier(0.34, 1.56, 0.64, 1) 60ms both;
+}
+.gg-halo {
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--success) 34%, transparent), transparent);
+  animation: gg-flash 900ms var(--ease-out-strong) 80ms both;
+}
+.gg-spark,
+.gg-ember {
+  left: calc(50% - 4px);
+  top: calc(50% - 4px);
+  background: var(--success);
+  clip-path: polygon(40% 0, 60% 0, 60% 40%, 100% 40%, 100% 60%, 60% 60%, 60% 100%, 40% 100%, 40% 60%, 0 60%, 0 40%, 40% 40%);
+  animation: gg-burst 760ms var(--ease-out-strong) var(--d, 0ms) both;
+}
+.gg-ember {
+  background: var(--warning);
+  clip-path: none;
+}
+.gg-win-coin {
+  translate: -50% 0;
+  image-rendering: pixelated;
+  animation: gg-win-coin 900ms var(--ease-out-strong) 250ms both;
+}
+.gg-win-plumber {
+  animation: gg-win-jump 700ms cubic-bezier(0.34, 1.4, 0.64, 1) 200ms both;
+}
+
+/* Stat cards: tinted glass in the theme's own colours, the label on a
+   tinted header strip, the value on the card beneath. */
+.gg-stat {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--c) 38%, transparent);
+  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--c) 7%, var(--card));
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 28%, transparent);
+}
+.gg-stat-head {
+  padding: 4px 0;
+  background: color-mix(in srgb, var(--c) 16%, transparent);
+  color: color-mix(in srgb, var(--c) 75%, var(--foreground));
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.gg-stat-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 46px;
+  color: var(--foreground);
+  font-size: 19px;
+  font-weight: 700;
+}
+.gg-stat-body svg {
+  color: var(--c);
+}
+
+/* The one button, Duolingo's: a thick lip underneath that disappears as it
+   is pressed, so it goes down like a real key. */
+.gg-raised {
+  --b: var(--primary);
+  height: 46px;
+  border-radius: var(--radius-xl);
+  background: var(--b);
+  color: var(--primary-foreground);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--b) 72%, black);
+  transition: transform 100ms ease, box-shadow 100ms ease, filter 100ms ease;
+  animation: gg-rise 420ms var(--ease-out-strong) var(--d, 0ms) both;
+  cursor: pointer;
+}
+.gg-raised:hover {
+  filter: brightness(1.06);
+}
+.gg-raised:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 color-mix(in srgb, var(--b) 72%, black);
+}
+.gg-raised:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--b) 60%, white);
+  outline-offset: 3px;
+}
+
+/* The streak: a grey flame that catches. Registered so the colours tween. */
+@property --fa { syntax: "<color>"; inherits: true; initial-value: #f59e0b; }
+@property --fb { syntax: "<color>"; inherits: true; initial-value: #fbbf24; }
+@property --fc { syntax: "<color>"; inherits: true; initial-value: #fef3c7; }
+.gg-flame {
+  transform-origin: 50% 100%;
+  animation:
+    gg-catch 360ms ease-out 250ms both,
+    gg-ignite 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 250ms both,
+    gg-flicker 1.6s steps(2) 1.3s infinite;
+}
+/* The flame in the theme's warning amber: deeper at the rim, pale at the heart. */
+.gg-flame {
+  --fa: color-mix(in srgb, var(--warning) 75%, var(--error));
+  --fb: var(--warning);
+  --fc: color-mix(in srgb, var(--warning) 35%, white);
+}
+.gg-flame-a { fill: var(--fa); }
+.gg-flame-b { fill: var(--fb); }
+.gg-flame-c { fill: var(--fc); }
+@keyframes gg-catch {
+  from { --fa: #5b5d64; --fb: #6e7078; --fc: #85878f; }
+}
+.gg-flash {
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--warning) 70%, transparent), transparent);
+  animation: gg-flash 800ms var(--ease-out-strong) 240ms both;
+}
+.gg-roll-out {
+  animation: gg-roll-out 420ms var(--ease-out-strong) 480ms both;
+}
+.gg-roll-in {
+  animation: gg-roll-in 520ms cubic-bezier(0.34, 1.56, 0.64, 1) 480ms both;
+}
+.gg-day-done {
+  background: var(--warning);
+  box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--warning) 70%, black);
+  animation: gg-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) var(--d, 0ms) both;
+}
+.gg-day-today {
+  outline: 2px solid color-mix(in srgb, var(--warning) 45%, transparent);
+  outline-offset: 2px;
+}
+.gg-streak-link {
+  background: color-mix(in srgb, var(--warning) 55%, transparent);
+  transform-origin: left;
+  animation: gg-draw 300ms var(--ease-out-strong) var(--d, 0ms) both;
+}
+
+/* A step that has just been met: its tick pops in. */
+.gg-tick {
+  animation: gg-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* A wrong pick shakes once, small. */
+.gg-shake {
+  animation: gg-shake 360ms ease-out both;
+}
+@keyframes gg-shake {
+  20% { translate: -4px 0; }
+  45% { translate: 4px 0; }
+  70% { translate: -2px 0; }
+  100% { translate: 0 0; }
+}
+
+@keyframes gg-fade { from { opacity: 0; } }
+@keyframes gg-screen-in { from { opacity: 0; transform: translateY(10px); } }
+@keyframes gg-rise { from { opacity: 0; transform: translateY(14px); } }
+@keyframes gg-rise-bounce { from { opacity: 0; transform: translateY(26px) scale(0.92); } }
+@keyframes gg-pop {
+  0% { opacity: 0; transform: scale(0.3) rotate(-10deg); }
+  60% { opacity: 1; transform: scale(1.08) rotate(3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes gg-flash {
+  0% { opacity: 0.9; transform: scale(0.2); }
+  100% { opacity: 0; transform: scale(2.4); }
+}
+@keyframes gg-burst {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.1); }
+}
+@keyframes gg-win-coin {
+  0% { opacity: 0; transform: translateY(30px) rotateY(0); }
+  30% { opacity: 1; }
+  70% { transform: translateY(-14px) rotateY(540deg); }
+  100% { opacity: 1; transform: translateY(0) rotateY(720deg); }
+}
+@keyframes gg-win-jump {
+  0% { transform: translateY(0); }
+  45% { transform: translateY(-26px); }
+  100% { transform: translateY(0); }
+}
+@keyframes gg-ignite {
+  0% { transform: scale(0.82); }
+  45% { transform: scale(1.2); }
+  75% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+@keyframes gg-flicker { 50% { transform: scaleY(1.04) scaleX(0.98); } }
+@keyframes gg-roll-out { to { opacity: 0; transform: translateY(-100%); } }
+@keyframes gg-roll-in { from { opacity: 0; transform: translateY(100%); } }
+@keyframes gg-draw { from { transform: scaleX(0); } }
+
 /* Reduced motion: keep every transition (opacity and colour still aid
    comprehension) but collapse movement to a single frame. */
 @media (prefers-reduced-motion: reduce) {
@@ -587,6 +937,22 @@
 @layer base {
   * {
     border-color: var(--border);
+  }
+
+  /* WebView2 (Chromium) bounces the whole page on overscroll; native apps don't. */
+  html,
+  body {
+    overscroll-behavior: none;
+    /* Chrome isn't selectable in a native app; only reading matter is. */
+    user-select: none;
+  }
+  .prose,
+  code,
+  pre,
+  input,
+  textarea,
+  [data-selectable] {
+    user-select: text;
   }
 
   body {

@@ -101,6 +101,63 @@ export interface UiStrings {
   saveKeptSuffix: string;
   dirPromptHome: string;
   dirPromptPractice: string;
+  // --- Hints, what changed, live repo -------------------------------------
+  hintAsk: string;
+  hintMore: string;
+  hintLevels: [string, string, string];
+  typoPrefix: string;
+  typoMeant: string;
+  whatChanged: string;
+  repoTitle: string;
+  repoLive: string;
+  repoNotYet: string;
+  repoNoCommits: string;
+  repoDirty: string;
+  repoClean: string;
+  winContinue: string;
+  winStay: string;
+  winChallenge: string;
+  winModule: string;
+  winCourse: string;
+  winCourse2: string;
+  winTime: string;
+  winCards: string;
+  winHints: string;
+  streakLabel: string;
+  streakFirst: string;
+  streakKeep: string;
+  streakMilestone: string;
+  cardNew: string;
+  cardsNew: string;
+  cardsBacklog: string;
+  cardsOpenDeck: string;
+  navDeck: string;
+  liveWatching: string;
+  termTitle: string;
+  termLast: string;
+  termLine: string;
+  termHint: string;
+  folderTitle: string;
+  folderEmpty: string;
+  folderIsDir: string;
+  folderIsFile: string;
+  folderHolds: string;
+  folderSummary: string;
+  predictEyebrow: string;
+  predictRight: string;
+  predictWrong: string;
+  predictNow: string;
+  repoBoards: string;
+  repoGhosts: string;
+  repoTravel: string;
+  repoNow: string;
+  repoAgo: string;
+  repoUnpushed: string;
+  deckTitle: string;
+  deckIntro: string;
+  deckCount: string;
+  deckCollected: string;
+  deckTaughtIn: string;
 }
 
 const EN: UiStrings = {
@@ -190,6 +247,62 @@ const EN: UiStrings = {
   dirPromptHome:
     "Pick your home directory — the folder `pwd` printed when you opened your terminal.",
   dirPromptPractice: "Pick the `gitgud-practice` folder you made.",
+  hintAsk: "Need a hint?",
+  hintMore: "Another hint",
+  hintLevels: ["Nudge", "Commands", "Walk-through"],
+  typoPrefix: "Spotted in your history:",
+  typoMeant: "did you mean",
+  whatChanged: "What changed",
+  repoTitle: "Your repository",
+  repoLive: "live",
+  repoNotYet: "Not a Git repository yet — run `git init` in this folder and it will appear here.",
+  repoNoCommits: "No commits yet. Your first `git commit` will show up here.",
+  repoDirty: "uncommitted",
+  repoClean: "Working tree clean",
+  winContinue: "Continue",
+  winStay: "Stay on this page",
+  winChallenge: "Challenge complete!",
+  winModule: "Module complete!",
+  winCourse: "Course complete!",
+  winCourse2: "Course",
+  winTime: "Time",
+  winCards: "New cards",
+  winHints: "Hints",
+  streakLabel: "day streak",
+  streakFirst: "Your streak starts today. Finish a challenge tomorrow to keep it going.",
+  streakKeep: "Keep it going: finish a challenge tomorrow to make it {next}.",
+  streakMilestone: "{n} days in a row. That's a milestone.",
+  cardNew: "New card",
+  cardsNew: "{n} new cards",
+  cardsBacklog: "You already know {n} commands. They're in your deck.",
+  cardsOpenDeck: "Open your deck",
+  navDeck: "Deck",
+  liveWatching: "Watching your work: steps tick off as you go",
+  termTitle: "Your terminal",
+  termLast: "The last thing you typed",
+  termLine: "From your history",
+  termHint: "Every line here is a command you really ran. Point at the window to scroll back through them.",
+  folderTitle: "Your folder",
+  folderEmpty: "Nothing in here yet. Make something with `mkdir` or `touch` and it appears on the tray.",
+  folderIsDir: "A folder",
+  folderIsFile: "A file",
+  folderHolds: "{n} things inside",
+  folderSummary: "Folders: {d} · Files: {f}. Boxes are folders (a dot for each thing inside), flat sheets are files. Point at one to see its name.",
+  predictEyebrow: "Predict first",
+  predictRight: "Right.",
+  predictWrong: "Not quite.",
+  predictNow: "Now run it, and watch your own graph below.",
+  repoBoards: "Front: your computer. Behind: GitHub",
+  repoGhosts: "Dashed: what this lesson adds",
+  repoTravel: "Travel back through history",
+  repoNow: "Now",
+  repoAgo: "{n} back",
+  repoUnpushed: "not pushed",
+  deckTitle: "Your deck",
+  deckIntro: "Every command the course teaches is a card. A card turns over the first time you run its command for real in your terminal, so this is a record of what you've done, not what you've read.",
+  deckCount: "{n} of {total} collected",
+  deckCollected: "Collected {date}",
+  deckTaughtIn: "Turns over in {title}",
 };
 
 // Values for the original eight keys are recovered verbatim except for case:
