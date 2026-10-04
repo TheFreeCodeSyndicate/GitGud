@@ -119,7 +119,12 @@ function main() {
   const listHtml = releases.map(renderRelease).join("\n\n");
 
   const site = readFileSync(SITE_PATH, "utf8");
-  const markerRe = /(<!-- releases:start -->\n)[\s\S]*?(\n\s*<!-- releases:end -->)/;
+  // `\n`-only would never match on a Windows checkout: git's default
+  // `core.autocrlf=true` writes this file to disk with `\r\n`, and the
+  // literal `\n` in the old regex sat right after `-->` with no `\r?` to
+  // absorb it. Both capture groups keep whichever line ending actually
+  // matched, so the replacement does not change the file's existing style.
+  const markerRe = /(<!-- releases:start -->\r?\n)[\s\S]*?(\r?\n\s*<!-- releases:end -->)/;
   if (!markerRe.test(site)) {
     throw new Error("site/changelog.html has no <!-- releases:start/end --> markers to replace");
   }
